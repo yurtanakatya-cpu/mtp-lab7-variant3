@@ -8,6 +8,7 @@ from sqlalchemy.engine import Engine
 
 PROJECT = Path(__file__).resolve().parents[1]
 DEFAULT_DATABASE = PROJECT / "books.sqlite3"
+SQLITE_MAX_ID = 2**63 - 1
 
 
 def database_url(path: str | Path | None = None) -> URL:

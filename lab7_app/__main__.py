@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from .books import create_book, delete_book, select_books
 from .csv_export import export_books
-from .database import database_url, open_engine
+from .database import SQLITE_MAX_ID, database_url, open_engine
 from .schemas import BookInput
 
 
@@ -36,7 +36,7 @@ def positive_id(value: str) -> int:
         book_id = int(value)
     except ValueError as error:
         raise argparse.ArgumentTypeError("ID должен быть целым") from error
-    if not 1 <= book_id <= 2**63 - 1:
+    if not 1 <= book_id <= SQLITE_MAX_ID:
         raise argparse.ArgumentTypeError("ID вне диапазона SQLite")
     return book_id
 

@@ -21,3 +21,10 @@ class BookInput(BaseModel):
     title: Title
     author: Author
     year: Year | None = None
+
+
+class BookRead(BookInput):
+    """Представление ORM-записи в ответе FastAPI."""
+
+    model_config = ConfigDict(from_attributes=True)
+    id: int

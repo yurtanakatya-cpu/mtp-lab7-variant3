@@ -2,7 +2,7 @@
 
 from collections.abc import Iterator
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from .models import Book
@@ -23,6 +23,25 @@ def create_book(session: Session, data: BookInput) -> Book:
         book = Book(**data.model_dump())
         session.add(book)
     return book
+
+
+def get_book(session: Session, book_id: int) -> Book | None:
+    """Найти книгу по первичному ключу."""
+    return session.get(Book, book_id)
+
+
+def replace_book(
+    session: Session, book_id: int, data: BookInput
+) -> Book | None:
+    """Обновить все поля книги и вернуть результат записи."""
+    query = (
+        update(Book)
+        .where(Book.id == book_id)
+        .values(**data.model_dump())
+        .returning(Book)
+    )
+    with session.begin():
+        return session.scalar(query)
 
 
 def delete_book(session: Session, book_id: int) -> bool:
