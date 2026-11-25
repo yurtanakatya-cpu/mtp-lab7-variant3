@@ -16,7 +16,9 @@ def upgrade() -> None:
         sa.Column(
             "year",
             sa.Integer(),
-            sa.CheckConstraint("year BETWEEN 1 AND 2100", name="ck_books_year"),
+            sa.CheckConstraint(
+                "year BETWEEN 1 AND 2100", name="ck_books_year"
+            ),
             nullable=True,
         ),
     )

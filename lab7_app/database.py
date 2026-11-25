@@ -15,7 +15,8 @@ def database_url(path: str | Path | None = None) -> URL:
     """Сформировать URL без ручного экранирования пути."""
     if path is None:
         path = environ.get("LAB7_DB_PATH", DEFAULT_DATABASE)
-    return URL.create("sqlite", database=str(Path(path).expanduser().resolve()))
+    resolved_path = Path(path).expanduser().resolve()
+    return URL.create("sqlite", database=str(resolved_path))
 
 
 def open_engine(url: URL) -> Engine:

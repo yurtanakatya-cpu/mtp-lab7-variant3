@@ -9,7 +9,9 @@ from fastapi import Depends, FastAPI, HTTPException, Query, Response, status
 from fastapi import Path as PathParam
 from sqlalchemy.orm import Session, sessionmaker
 
-from .books import create_book, delete_book, get_book, replace_book, select_books
+from .books import (
+    create_book, delete_book, get_book, replace_book, select_books,
+)
 from .database import SQLITE_MAX_ID, database_url, open_engine
 from .models import Book
 from .schemas import BookInput, BookRead
@@ -50,7 +52,9 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
         "/books", response_model=BookRead, status_code=status.HTTP_201_CREATED,
         summary="Добавить книгу",
     )
-    def add_book(data: BookInput, response: Response, session: DbSession) -> Book:
+    def add_book(
+        data: BookInput, response: Response, session: DbSession
+    ) -> Book:
         book = create_book(session, data)
         response.headers["Location"] = f"/books/{book.id}"
         return book
@@ -67,7 +71,9 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
     @app.put(
         "/books/{book_id}", response_model=BookRead, summary="Заменить данные"
     )
-    def update_book(book_id: BookId, data: BookInput, session: DbSession) -> Book:
+    def update_book(
+        book_id: BookId, data: BookInput, session: DbSession
+    ) -> Book:
         book = replace_book(session, book_id, data)
         if book is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Книга не найдена")
