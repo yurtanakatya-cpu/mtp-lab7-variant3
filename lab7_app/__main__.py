@@ -2,12 +2,14 @@
 
 import argparse
 import sys
+from pathlib import Path
 
 from pydantic import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from .books import create_book, delete_book, select_books
+from .csv_export import export_books
 from .database import database_url, open_engine
 from .schemas import BookInput
 
@@ -23,6 +25,8 @@ def build_parser() -> argparse.ArgumentParser:
     add.add_argument("--year", type=int, help="год издания")
     delete = commands.add_parser("delete", help="удалить книгу по ID")
     delete.add_argument("book_id", type=positive_id, metavar="ID")
+    export = commands.add_parser("export", help="выгрузить книги в CSV")
+    export.add_argument("destination", type=Path, metavar="ФАЙЛ")
     return parser
 
 
@@ -57,6 +61,9 @@ def run_command(args: argparse.Namespace, session: Session) -> int:
             print(f"Книга {args.book_id} не найдена.", file=sys.stderr)
             return 1
         print(f"Книга {args.book_id} удалена.")
+    elif args.command == "export":
+        count = export_books(session, args.destination)
+        print(f"Записей выгружено: {count}. Файл: {args.destination}")
     return 0
 
 
@@ -69,6 +76,9 @@ def main(argv: list[str] | None = None) -> int:
             return run_command(args, session)
     except ValidationError as error:
         print(f"Некорректные данные: {error}", file=sys.stderr)
+        return 1
+    except OSError as error:
+        print(f"Не удалось записать CSV: {error}", file=sys.stderr)
         return 1
     except SQLAlchemyError:
         print(
