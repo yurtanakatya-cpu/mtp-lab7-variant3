@@ -2,7 +2,7 @@
 
 from collections.abc import Iterator
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from .models import Book
@@ -23,3 +23,10 @@ def create_book(session: Session, data: BookInput) -> Book:
         book = Book(**data.model_dump())
         session.add(book)
     return book
+
+
+def delete_book(session: Session, book_id: int) -> bool:
+    """Удалить книгу по ID и сообщить, была ли такая запись."""
+    query = delete(Book).where(Book.id == book_id).returning(Book.id)
+    with session.begin():
+        return session.scalar(query) is not None

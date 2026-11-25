@@ -7,7 +7,7 @@ from pydantic import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from .books import create_book, select_books
+from .books import create_book, delete_book, select_books
 from .database import database_url, open_engine
 from .schemas import BookInput
 
@@ -21,7 +21,20 @@ def build_parser() -> argparse.ArgumentParser:
     add.add_argument("title", help="название")
     add.add_argument("author", help="автор")
     add.add_argument("--year", type=int, help="год издания")
+    delete = commands.add_parser("delete", help="удалить книгу по ID")
+    delete.add_argument("book_id", type=positive_id, metavar="ID")
     return parser
+
+
+def positive_id(value: str) -> int:
+    """Проверить, что ID — положительное целое число."""
+    try:
+        book_id = int(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("ID должен быть целым") from error
+    if not 1 <= book_id <= 2**63 - 1:
+        raise argparse.ArgumentTypeError("ID вне диапазона SQLite")
+    return book_id
 
 
 def run_command(args: argparse.Namespace, session: Session) -> int:
@@ -39,6 +52,11 @@ def run_command(args: argparse.Namespace, session: Session) -> int:
         for book in books:
             year = book.year if book.year is not None else "—"
             print(f"{book.id} | {book.title} | {book.author} | {year}")
+    elif args.command == "delete":
+        if not delete_book(session, args.book_id):
+            print(f"Книга {args.book_id} не найдена.", file=sys.stderr)
+            return 1
+        print(f"Книга {args.book_id} удалена.")
     return 0
 
 
